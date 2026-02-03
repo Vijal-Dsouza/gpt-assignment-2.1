@@ -1,0 +1,40 @@
+name: deployment file
+on: ['push']
+
+jobs:
+  ec2-info:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: aws config
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+        - name: verify instance state
+          run: |
+            state=$(aws ec2 describe-instances \
+            --instance-ids i-03fb51cef25cc0a37 \
+            --query "Reservations[].Instances[].State.Name" \
+            --output text)
+            echo "EC2 instance state is $state"
+        
+        - name: print public ip
+          run: |
+            public_ip=$(aws ec2 describe-instances \
+            --instance-ids i-03fb51cef25cc0a37 \
+            --query "Reservations[].Instances[].PublicIpAddress" \
+            --output text) 
+
+            echo "Public ip of instance is $public_ip"
+          
+          - name: curl check
+
+            run: |
+              public_ip=$(aws ec2 describe-instances \
+              --instance-ids i-03fb51cef25cc0a37 \
+              --query "Reservations[].Instances[].PublicIpAddress" \
+              --output text)
+              curl http://$public_ip
